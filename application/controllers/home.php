@@ -3,7 +3,7 @@
 class Home extends CI_Controller {
     
     public function index()
-    {
+    {     
         $ip = $_SERVER['REMOTE_ADDR'];
         $url_c = "http://ip-api.com/json/$ip";
         $json_c = json_decode(file_get_contents($url_c));
@@ -23,7 +23,8 @@ class Home extends CI_Controller {
             'dhuhr'   => $json_t->items[0]->dhuhr,
             'asr'     => $json_t->items[0]->asr,
             'maghrib' => $json_t->items[0]->maghrib,
-            'isha'    => $json_t->items[0]->isha
+            'isha'    => $json_t->items[0]->isha,
+            'method'  => $json_t->method
         );
         
 //        echo '<pre>';
@@ -35,7 +36,14 @@ class Home extends CI_Controller {
         
     public function search(){
         
-        $address = $_GET['location'];
+        if(empty($_GET['location'])){
+            $ip = $_SERVER['REMOTE_ADDR'];
+            $url_c = "http://ip-api.com/json/$ip";
+            $json_c = json_decode(file_get_contents($url_c));
+            $address = $json_c->city;
+        }else{
+            $address = $_GET['location'];            
+        }
         $method  = $_GET['method'];
         $date    = date('Y-m-d');
                 
@@ -43,14 +51,15 @@ class Home extends CI_Controller {
         $url_s = "http://maps.google.com/maps/api/geocode/json?address=$new_address&sensor=false";
         $json_s = file_get_contents($url_s);
         $j_s = json_decode($json_s);
-        $city = $j_s->{'results'}[0]->{'address_components'}[0]->{'long_name'};                
-        $new_city = str_replace(" ", "", $city);
+//        $city = $j_s->{'results'}[0]->{'address_components'}[0]->{'long_name'};                
+//        $new_city = str_replace(" ", "", $city);
+        $ltlng = $j_s->results[0]->geometry->location->lat.','.$j_s->results[0]->geometry->location->lng;
                 
-        $url_t = "http://muslimsalat.com/$new_city/$date/5.json?key=f42d1ffabf360f269de7bf4032baaa28";
+        $url_t = "http://muslimsalat.com/$ltlng/$date/$method.json?key=f42d1ffabf360f269de7bf4032baaa28";
         $json_t = file_get_contents($url_t);
         $j_t = json_decode($json_t);
         
-        $url_time = "http://www.earthtools.org/timezone/".$j_s->{'results'}[0]->{'geometry'}->{'location'}->{'lat'}."/".$j_s->{'results'}[0]->{'geometry'}->{'location'}->{'lng'};
+        $url_time = "http://www.earthtools.org/timezone/".$j_s->results[0]->geometry->location->lat."/".$j_s->results[0]->geometry->location->lng;
         $xml_time = simplexml_load_file($url_time);
                         
 //        echo '<pre>'; 
@@ -59,9 +68,9 @@ class Home extends CI_Controller {
 
         $result['data'] = array(
             'status'  => $j_t->status_valid,
-            'lat'     => $j_s->{'results'}[0]->{'geometry'}->{'location'}->{'lat'},
-            'long'    => $j_s->{'results'}[0]->{'geometry'}->{'location'}->{'lng'},                    
-            'loc'     => $j_s->{'results'}[0]->{'formatted_address'},
+            'lat'     => $j_s->results[0]->geometry->location->lat,
+            'long'    => $j_s->results[0]->geometry->location->lng,                    
+            'loc'     => $j_s->results[0]->formatted_address,
             'time'    => $xml_time->isotime,
             'qibla'   => $j_t->qibla_direction,
             'fajr'    => $j_t->items[0]->fajr,
@@ -69,7 +78,8 @@ class Home extends CI_Controller {
             'dhuhr'   => $j_t->items[0]->dhuhr,
             'asr'     => $j_t->items[0]->asr,
             'maghrib' => $j_t->items[0]->maghrib,
-            'isha'    => $j_t->items[0]->isha
+            'isha'    => $j_t->items[0]->isha,
+            'method'  => $j_t->method
         );
            
         $this->load->view('home_view', $result);

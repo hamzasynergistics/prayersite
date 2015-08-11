@@ -51,8 +51,8 @@ $autoload['packages'] = array();
 |
 |	$autoload['libraries'] = array('database', 'session', 'xmlrpc');
 */
-
-$autoload['libraries'] = array();
+// here template autload libray can be added
+$autoload['libraries'] = array('database' , 'session');
 
 
 /*
@@ -64,7 +64,7 @@ $autoload['libraries'] = array();
 |	$autoload['helper'] = array('url', 'file');
 */
 
-$autoload['helper'] = array("url", "form");
+$autoload['helper'] = array('url');
 
 
 /*
@@ -110,6 +110,18 @@ $autoload['language'] = array();
 */
 
 $autoload['model'] = array();
+
+/*
+| -------------------------------------------------------------------
+|  Encryption key
+| -------------------------------------------------------------------
+| Prototype:
+|
+|		$config['encryption_key'] = 'REALLY_LONG_NUMBER';
+|
+*/
+
+	$config['encryption_key'] = 'sdfojisdmnhklcx4wozQ5opsp';
 
 
 /* End of file autoload.php */
